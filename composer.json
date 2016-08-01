@@ -1,0 +1,24 @@
+{
+  "name": "md/phunkie-console",
+  "description": "A console for Phunkie development",
+  "license":      "MIT",
+  "authors": [
+    {
+      "name": "Marcello Duarte",
+      "email": "marello.duarte@gmail.com"
+    }
+  ],
+  "require": {
+    "md/phunkie": "dev-master"
+  },
+  "autoload": {
+    "psr-0": {
+      "": [ "src/"]
+    },
+    "files": ["src/Md/PhunkieConsole/Functions.php"]
+  },
+  "config": {
+    "bin-dir": "bin"
+  },
+  "bin": ["bin/phunkie-console"]
+}
