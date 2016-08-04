@@ -73,9 +73,9 @@ class FunctionDefinitionInstruction extends BasicInstruction {
 class PlainInstruction extends BasicInstruction {
     public function execute(): Option
     {
-        $___ = null;
-        eval("\$___={$this->getInstruction()};");
-        return Some(new ShowableInstructionResult($___));
+        $veryUniquePhunkieSpecificVariableName = null;
+        eval("\$veryUniquePhunkieSpecificVariableName={$this->getInstruction()};");
+        return Some(new ShowableInstructionResult($veryUniquePhunkieSpecificVariableName));
     }
 }
 
