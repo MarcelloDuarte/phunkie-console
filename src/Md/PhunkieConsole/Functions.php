@@ -10,6 +10,7 @@ use Md\Phunkie\Types\ImmList;
 
 require_once __DIR__ . "/Instruction.php";
 require_once __DIR__ . "/Result.php";
+require_once __DIR__ . "/Command.php";
 
 function PrintLn($message)
 {

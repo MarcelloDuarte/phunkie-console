@@ -2,13 +2,15 @@
 
 namespace Md\PhunkieConsole;
 
+use Md\Phunkie\Types\Function1;
 use Md\Phunkie\Types\Option;
 
 function Instruction($instruction) { switch (true) {
     case empty(trim($instruction)): return new NoInstruction("");
     case isPrinting($instruction): return new PrintingInstruction($instruction);
     case isClass($instruction): return new ClassDefinitionInstruction($instruction);
-    case isFunction($instruction): return new FunctionDefinitionInstruction($instruction); }
+    case isFunction($instruction): return new FunctionDefinitionInstruction($instruction);
+    case isCommand($instruction): return new CommandInstruction($instruction); }
     return new PlainInstruction($instruction);
 }
 
@@ -20,6 +22,8 @@ function isPrinting($instruction) {
 function isClass($instruction) { return strpos(trim($instruction), "class") === 0; }
 
 function isFunction($instruction) { return strpos(trim($instruction), "function") === 0; }
+
+function isCommand($instruction) { return strpos(trim($instruction), ":") === 0; }
 
 interface Instruction {
     public function execute(): Option;
@@ -72,5 +76,12 @@ class PlainInstruction extends BasicInstruction {
         $___ = null;
         eval("\$___={$this->getInstruction()};");
         return Some(new ShowableInstructionResult($___));
+    }
+}
+
+class CommandInstruction extends BasicInstruction {
+    public function execute(): Option
+    {
+        return Some(new PrintableInstructionResult(Command($this->getInstruction())->execute()->getOrElse("")));
     }
 }
