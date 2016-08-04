@@ -2,7 +2,6 @@
 
 namespace Md\PhunkieConsole;
 
-use Md\Phunkie\Types\Function1;
 use Md\Phunkie\Types\Option;
 
 function Instruction($instruction) { switch (true) {
