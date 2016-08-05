@@ -64,15 +64,9 @@ function import(string $module) {
     };
 
     if ($function === "*") {
-        $allFunctions = get_defined_functions();
-        $userFunctions = ImmList(...$allFunctions["user"]);
-        $filtered = $userFunctions->filter(function($f) use ($namespace) {
-            return strpos(strtolower($f),strtolower($namespace)) === 0;
-        });
-        $filtered->map(function($f){ return substr(strrchr($f, "\\"), 1); })
-            ->map(function($function) use ($namespace, $createFunction) {
-                $createFunction($namespace, $function);
-            });
+        ImmList(...get_defined_functions()["user"])->filter(function($f) use ($namespace) { return strpos(strtolower($f),strtolower($namespace)) === 0;})
+            ->map(function($f){ return substr(strrchr($f, "\\"), 1); })
+            ->map(function($function) use ($namespace, $createFunction) { $createFunction($namespace, $function); });
     } else {
         $createFunction($namespace, $function);
     }
