@@ -2,8 +2,8 @@
 
 namespace Md\PhunkieConsole;
 
-use Md\Phunkie\Cats\IO;
-use function Md\Phunkie\Functions\io\io;
+use Md\Phunkie\Cats\IO as IOUnit;
+use function Md\Phunkie\Functions\io\io as io;
 use Md\Phunkie\Types\Unit;
 
 class App
@@ -18,7 +18,7 @@ class App
         return Unit();
     }
 
-    private function printHeader(): IO
+    private function printHeader(): IOUnit
     {
         return PrintLines(ImmList(
             "Welcome to phunkie console.",
