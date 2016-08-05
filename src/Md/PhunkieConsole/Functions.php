@@ -2,11 +2,30 @@
 
 namespace Md\PhunkieConsole;
 
-use Md\Phunkie\Cats\IO;
+use Md\Phunkie\Cats\IO as IOUnit;
 use function Md\Phunkie\Functions\io\io;
 use function Md\Phunkie\PatternMatching\Referenced\Some as _Some;
 use function Md\Phunkie\Functions\show\get_value_to_show;
 use Md\Phunkie\Types\ImmList;
+
+set_exception_handler(function(\Throwable $e) {
+    PrintLn(get_class($e) . ": " . $e->getMessage())->run();
+    forever(io(function() {
+        ReadLine("phunkie > ")->flatMap(function ($input) { return ProcessAndOutputResult($input); })->run();
+    }));
+});
+
+set_error_handler(function($code, $error) {
+    $type = "Error";
+    switch ($code) {
+        case E_NOTICE: $type = "Notice"; break;
+        case E_WARNING: $type = "Warning"; break;
+    }
+    PrintLn("$type: $error")->run();
+    forever(io(function() {
+        ReadLine("phunkie > ")->flatMap(function ($input) { return ProcessAndOutputResult($input); })->run();
+    }));
+});
 
 require_once __DIR__ . "/Instruction.php";
 require_once __DIR__ . "/Result.php";
@@ -38,13 +57,13 @@ function ReadLine($prompt)
     });
 }
 
-function ProcessAndOutputResult($input): IO { $on = match(Instruction($input)->execute()); switch (true) {
+function ProcessAndOutputResult($input): IOUnit { $on = match(Instruction($input)->execute()); switch (true) {
     case $on(None): return PrintLn("");
     case $on(_Some($a)): return PrintLn($a->output()); }
     return PrintLn("");
 }
 
-function forever(IO $io) {
+function forever(IOUnit $io) {
     $io->run();
     forever ($io);
 }
