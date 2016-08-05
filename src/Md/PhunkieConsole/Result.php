@@ -24,6 +24,10 @@ class ClassDefinedInstructionResult extends InstructionResult {
     public function output() { return "defined class " . $this->getResult(); }
 }
 
+class ConstantDefinedInstructionResult extends InstructionResult {
+    public function output() { return "defined constant " . $this->getResult(); }
+}
+
 class PrintableInstructionResult extends InstructionResult {
     public function output() { return $this->getResult(); }
 }
