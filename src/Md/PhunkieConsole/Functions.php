@@ -3,63 +3,49 @@
 namespace Md\PhunkieConsole;
 
 use Md\Phunkie\Cats\IO as IOUnit;
+use Md\Phunkie\Types\ImmList;
+use Md\Phunkie\Types\Unit;
 use function Md\Phunkie\Functions\io\io;
 use function Md\Phunkie\PatternMatching\Referenced\Some as _Some;
-use function Md\Phunkie\Functions\show\get_value_to_show;
-use Md\Phunkie\Types\ImmList;
+use function Md\PhunkieConsole\Colors\bold;
+use function Md\PhunkieConsole\Colors\boldRed;
+use function Md\PhunkieConsole\Colors\purple;
 
-set_exception_handler(function(\Throwable $e) {
-    PrintLn(get_class($e) . ": " . $e->getMessage())->run();
-    forever(io(function() {
-        ReadLine("phunkie > ")->flatMap(function ($input) { return ProcessAndOutputResult($input); })->run();
-    }));
-});
-
-set_error_handler(function($code, $error) {
-    $type = "Error";
-    switch ($code) {
-        case E_NOTICE: $type = "Notice"; break;
-        case E_WARNING: $type = "Warning"; break;
-    }
-    PrintLn("$type: $error")->run();
-    forever(io(function() {
-        ReadLine("phunkie > ")->flatMap(function ($input) { return ProcessAndOutputResult($input); })->run();
-    }));
-});
-
+require_once __DIR__ . "/Colours.php";
+require_once __DIR__ . "/IO.php";
 require_once __DIR__ . "/Instruction.php";
-require_once __DIR__ . "/Result.php";
 require_once __DIR__ . "/Command.php";
 
-function PrintLn($message)
-{
-    return io(function() use ($message) { print($message . "\n"); });
-}
+function keepDealingWithErrors() {
+    set_exception_handler(function(\Throwable $e) {
+        PrintLn(bold(get_class($e)) . ": " . boldRed($e->getMessage()))->run();
+        readLineProcessAndOutput();
+    });
 
-function PrintLines(ImmList $lines)
-{
-    return io(function() use ($lines) { $lines->map(function($line) { print($line . "\n"); }); });
-}
+    set_error_handler(function($code, $error) { switch ($code) {
+        case E_NOTICE: $type = "Notice"; break;
+        case E_WARNING: $type = "Warning"; break;
+        default: $type = "Error"; }
 
-function ReadLine($prompt)
-{
-    return io(function () use ($prompt) {
-        $input = \readline($prompt);
-        if (!empty($input)) {
-            readline_add_history($input);
-        }
-        $line = rtrim($input, "\n");
-        if ($input === false || $line === "exit") {
-            echo $input ? "" : "\n";
-            exit(0);
-        }
-        return $line;
+        PrintLn(bold("$type: ") . boldRed($error))->run();
+        keepDealingWithErrors();
+        readLineProcessAndOutput();
     });
 }
 
-function ProcessAndOutputResult($input): IOUnit { $on = match(Instruction($input)->execute()); switch (true) {
+function readLineProcessAndOutput(): Unit
+{
+    forever(io(function() {
+        ReadLine(bold(purple("phunkie")) . " > ")
+            ->flatMap(function ($input) { return processAndOutputResult($input); })
+            ->run();
+    }));
+    return Unit();
+}
+
+function processAndOutputResult($input): IOUnit { $on = match(Instruction($input)->execute()); switch (true) {
     case $on(None): return PrintLn("");
-    case $on(_Some($a)): return PrintLn($a->output()); }
+    case $on(_Some($a)): return PrintLn($a->output())->andThen(PrintLn("")); }
     return PrintLn("");
 }
 

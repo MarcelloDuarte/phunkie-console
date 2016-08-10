@@ -3,25 +3,23 @@
 namespace Md\PhunkieConsole;
 
 use Md\Phunkie\Cats\IO as IOUnit;
-use function Md\Phunkie\Functions\io\io as io;
 use Md\Phunkie\Types\Unit;
+use function Md\Phunkie\Functions\io\io as io;
+use function Md\PhunkieConsole\Colors\purple;
 
 class App
 {
     public function main(): Unit
     {
+        keepDealingWithErrors();
         $this->printHeader()->run();
-        forever(io(function() {
-            ReadLine("phunkie > ")->flatMap(function ($input) { return ProcessAndOutputResult($input); })->run();
-        }));
-
-        return Unit();
+        return readLineProcessAndOutput();
     }
 
     private function printHeader(): IOUnit
     {
         return PrintLines(ImmList(
-            "Welcome to phunkie console.",
+            "Welcome to " . purple("phunkie") . " console.",
             "",
             "Type in expressions to have them evaluated.",
             ""
