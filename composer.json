@@ -11,6 +11,10 @@
   "require": {
     "md/phunkie": "dev-master"
   },
+  "require-dev": {
+    "phpspec/phpspec": "~3.0",
+    "bossa/phpspec2-expect": "~2.0"
+  },
   "autoload": {
     "psr-0": {
       "": [ "src/"]
