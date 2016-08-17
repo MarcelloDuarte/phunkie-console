@@ -3,6 +3,7 @@
 namespace Md\PhunkieConsole;
 
 use function Md\Phunkie\Functions\show\get_value_to_show;
+use Md\Phunkie\Types\Option;
 use function Md\PhunkieConsole\Colors\bold;
 use function Md\PhunkieConsole\Colors\magenta;
 use function Md\PhunkieConsole\Colors\red;
@@ -16,7 +17,7 @@ function Command($command) { switch(true) {
     default: return new InvalidCommand($command);}
 }
 
-function import(string $module) {
+function import(string $module): Option {
     $module = trim($module);
     if (count($parts = explode("/", $module)) != 2) {
         return Some(bold(red("Invalid module: ")) . red(get_value_to_show(trim($module))));

@@ -2,15 +2,15 @@
 
 namespace Md\PhunkieConsole\Instruction;
 
-use Md\Phunkie\Types\Option;
+use Md\Phunkie\Validation\Validation;
 use function Md\PhunkieConsole\Command;
 
 class CommandInstruction extends BasicInstruction
 {
     /**
-     * @return Option<InstructionResult>
+     * @return Validation<Exception, InstructionResult>
      */
-    public function execute(): Option
+    public function execute(): Validation
     {
         return Command($this->getInstruction())->execute();
     }

@@ -2,50 +2,68 @@
 
 namespace Md\PhunkieConsole;
 
-use Md\Phunkie\Cats\IO as IOUnit;
 use Md\Phunkie\Types\ImmList;
+use Md\Phunkie\Types\NonEmptyList;
 use Md\Phunkie\Types\Unit;
+
+use Md\Phunkie\Cats\IO as IOUnit;
 use function Md\Phunkie\Functions\io\io;
-use function Md\Phunkie\PatternMatching\Referenced\Some as _Some;
+
+use function Md\Phunkie\PatternMatching\Referenced\Success as Valid;
+use function Md\Phunkie\PatternMatching\Referenced\Failure as Invalid;
+
 use function Md\PhunkieConsole\Colors\bold;
 use function Md\PhunkieConsole\Colors\boldRed;
 use function Md\PhunkieConsole\Colors\purple;
+use Md\PhunkieConsole\Result\BufferedResult;
+use Throwable;
 
 require_once __DIR__ . "/Colours.php";
 require_once __DIR__ . "/IO.php";
 require_once __DIR__ . "/Instruction.php";
 require_once __DIR__ . "/Command.php";
 
-function keepDealingWithErrors() {
-    set_exception_handler(function(\Throwable $e) {
+function keepDealingWithErrors($state) {
+    set_exception_handler(function(Throwable $e) use ($state) {
         PrintLn(bold(get_class($e)) . ": " . boldRed($e->getMessage()))->run();
-        readLineProcessAndOutput();
+        keepDealingWithErrors($state);
+        readLineProcessAndOutput($state);
     });
 
-    set_error_handler(function($code, $error) { switch ($code) {
+    set_error_handler(function($code, $error) use ($state) { switch ($code) {
         case E_NOTICE: $type = "Notice"; break;
         case E_WARNING: $type = "Warning"; break;
         default: $type = "Error"; }
 
         PrintLn(bold("$type: ") . boldRed($error))->run();
-        keepDealingWithErrors();
-        readLineProcessAndOutput();
+        keepDealingWithErrors($state);
+        readLineProcessAndOutput($state);
     });
 }
 
-function readLineProcessAndOutput(): Unit
+function readLineProcessAndOutput(AppState $state): Unit
 {
-    forever(io(function() {
-        ReadLine(bold(purple("phunkie")) . " > ")
-            ->flatMap(function ($input) { return processAndOutputResult($input); })
+    forever(io(function() use ($state) {
+        ReadLine(bold(purple("phunkie")) . $state->prompt())
+            ->flatMap(function ($input) use ($state) { return processAndOutputResult($input, $state); })
             ->run();
     }));
     return Unit();
 }
 
-function processAndOutputResult($input): IOUnit { $on = match(Instruction($input)->execute()); switch (true) {
-    case $on(None): return PrintLn("");
-    case $on(_Some($a)): return PrintLn($a->output())->andThen(PrintLn("")); }
+function processAndOutputResult($input, $state): IOUnit { $on = match(Instruction($input)->execute()); switch (true) {
+    case $on(Invalid($e)): return $e instanceof NonEmptyList ?
+                                  $e->fold("", function($x,Throwable $y) {
+                                      return $x instanceof Throwable ? PrintLn(bold(get_class($x)) . ": " . boldRed($x->getMessage()))->andThen(
+                                          PrintLn(bold(get_class($y)) . ": " . boldRed($y->getMessage()))) :
+                                          PrintLn(bold(get_class($y)) . ": " . boldRed($y->getMessage()));
+                                  }) :
+                                  PrintLn(bold(get_class($e)) . ": " . boldRed($e->getMessage()));
+    case $on(Valid($a)):
+        if ($a instanceof BufferedResult) {
+
+        }
+        return PrintLn($a->output()); }
     return PrintLn("");
 }
 

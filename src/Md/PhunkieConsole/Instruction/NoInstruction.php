@@ -2,15 +2,16 @@
 
 namespace Md\PhunkieConsole\Instruction;
 
-use Md\Phunkie\Types\Option;
+use Md\Phunkie\Validation\Validation;
+use Md\PhunkieConsole\Result\NoResult;
 
 class NoInstruction extends BasicInstruction
 {
     /**
-     * @return Option<InstructionResult>
+     * @return Validation<InstructionResult>
      */
-    public function execute(): Option
+    public function execute(): Validation
     {
-        return None();
+        return Success(new NoResult(""));
     }
 }

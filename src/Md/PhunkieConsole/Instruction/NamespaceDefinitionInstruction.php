@@ -2,17 +2,18 @@
 
 namespace Md\PhunkieConsole\Instruction;
 
-use Md\Phunkie\Types\Option;
+use Md\Phunkie\Validation\Validation;
 use Md\PhunkieConsole\Result\ClassDefinedInstructionResult;
 use Md\PhunkieConsole\Result\ConstantDefinedInstructionResult;
 use Md\PhunkieConsole\Result\FunctionDefinedInstructionResult;
+use Md\PhunkieConsole\Result\NoResult;
 
 class NamespaceDefinitionInstruction extends BasicInstruction
 {
     /**
-     * @return Option<InstructionResult>
+     * @return Validation<Exception, InstructionResult>
      */
-    public function execute(): Option
+    public function execute(): Validation
     {
         preg_match('/(namespace)(\s+)([^{]*)({)(.*)}/', $this->getInstruction(), $matches);
         preg_match('/(class)(\s+)(\w+)(.*)/', $matches[5], $classMatches);
@@ -32,33 +33,33 @@ class NamespaceDefinitionInstruction extends BasicInstruction
             return $this->defineConstant($matches, $constMatches);
         }
 
-        return None();
+        return Success(new NoResult(""));
     }
 
-    private function defineClass($matches, $classMatches)
+    private function defineClass($matches, $classMatches): Validation
     {
         $fqcn = "\\" . trim($matches[3]) . "\\" . $classMatches[3];
         if (class_exists($fqcn)) {
-            return Some(new ClassDefinedInstructionResult($fqcn));
+            return Success(new ClassDefinedInstructionResult($fqcn));
         }
-        return None();
+        return Success(new NoResult(""));
     }
 
-    private function defineFunction($matches, $functionMatches)
+    private function defineFunction($matches, $functionMatches): Validation
     {
         $fqfn = "\\" . trim($matches[3]) . "\\" . $functionMatches[3];
         if (function_exists($fqfn)) {
-            return Some(new FunctionDefinedInstructionResult($fqfn));
+            return Success(new FunctionDefinedInstructionResult($fqfn));
         }
-        return None();
+        return Success(new NoResult(""));
     }
 
-    private function defineConstant($matches, $constMatches)
+    private function defineConstant($matches, $constMatches): Validation
     {
         $fqcn = "\\" . trim($matches[3]) . "\\" . $constMatches[3];
         if (defined($fqcn)) {
-            return Some(new ConstantDefinedInstructionResult($fqcn));
+            return Success(new ConstantDefinedInstructionResult($fqcn));
         }
-        return None();
+        return Success(new NoResult(""));
     }
 }

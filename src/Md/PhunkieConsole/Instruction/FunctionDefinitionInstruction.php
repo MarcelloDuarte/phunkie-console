@@ -2,21 +2,26 @@
 
 namespace Md\PhunkieConsole\Instruction;
 
-use Md\Phunkie\Types\Option;
+use Md\Phunkie\Validation\Validation;
 use Md\PhunkieConsole\Result\FunctionDefinedInstructionResult;
+use Md\PhunkieConsole\Result\NoResult;
 
 class FunctionDefinitionInstruction extends BasicInstruction
 {
     /**
-     * @return Option<InstructionResult>
+     * @return Validation<Exception, InstructionResult>
      */
-    public function execute(): Option
+    public function execute(): Validation
     {
         preg_match('/(function)(\s+)(\w+)(.*)/', $this->getInstruction(), $matches);
-        eval($this->getInstruction());
-        if (in_array($matches[3], get_defined_functions()['user'])) {
-            return Some(new FunctionDefinedInstructionResult($matches[3]));
+        if (isset($matches[3]) && function_exists($matches[3])) {
+            return Failure(new \Error("Cannot redeclare {$matches[3]}, previously declared"));
         }
-        return None();
+
+        eval($this->getInstruction());
+
+        return in_array($matches[3], get_defined_functions()['user']) ?
+            Success(new FunctionDefinedInstructionResult($matches[3])) :
+            Success(new NoResult(""));
     }
 }

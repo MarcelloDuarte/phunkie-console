@@ -2,7 +2,8 @@
 
 namespace Md\PhunkieConsole;
 
-use Md\Phunkie\Types\Option;
+use Md\Phunkie\Validation\Validation;
+use Md\PhunkieConsole\Instruction\BlockBufferInstruction;
 use Md\PhunkieConsole\Instruction\ClassDefinitionInstruction;
 use Md\PhunkieConsole\Instruction\CommandInstruction;
 use Md\PhunkieConsole\Instruction\ConstantDefinitionInstruction;
@@ -14,11 +15,12 @@ use Md\PhunkieConsole\Instruction\PrintingInstruction;
 
 interface Instruction
 {
-    public function execute(): Option;
+    public function execute(): Validation;
 }
 
-function Instruction($instruction) { switch (true) {
+function Instruction($instruction): Instruction { switch (true) {
     case empty(trim($instruction)): return new NoInstruction("");
+    case isBlock($instruction): return new BlockBufferInstruction($instruction);
     case isPrinting($instruction): return new PrintingInstruction($instruction);
     case isClass($instruction): return new ClassDefinitionInstruction($instruction);
     case isNamespace($instruction): return new NamespaceDefinitionInstruction($instruction);
@@ -31,6 +33,10 @@ function Instruction($instruction) { switch (true) {
 function isPrinting($instruction) {
     return ImmList("echo", "print", "var_dump", "sprintf", "print_r", "var_export", "die")
         ->filter(function($f) use ($instruction) { return strpos(trim($instruction), $f) === 0; })->length > 0;
+}
+
+function isBlock($instruction) {
+    return trim($instruction)[strlen($instruction) - 1] === "{";
 }
 
 function isClass($instruction) { return strpos(trim($instruction), "class") === 0; }

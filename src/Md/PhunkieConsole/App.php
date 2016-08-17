@@ -11,9 +11,10 @@ class App
 {
     public function main(): Unit
     {
-        keepDealingWithErrors();
+        $state = new AppState(" > ");
+        keepDealingWithErrors($state);
         $this->printHeader()->run();
-        return readLineProcessAndOutput();
+        return readLineProcessAndOutput($state);
     }
 
     private function printHeader(): IOUnit

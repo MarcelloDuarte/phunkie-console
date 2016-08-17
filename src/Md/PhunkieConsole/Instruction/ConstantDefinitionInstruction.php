@@ -2,21 +2,27 @@
 
 namespace Md\PhunkieConsole\Instruction;
 
-use Md\Phunkie\Types\Option;
+use Md\Phunkie\Validation\Validation;
 use Md\PhunkieConsole\Result\ConstantDefinedInstructionResult;
 
 class ConstantDefinitionInstruction extends BasicInstruction
 {
     /**
-     * @return Option<InstructionResult>
+     * @return Validation<Exception, InstructionResult>
      */
-    public function execute(): Option
+    public function execute(): Validation
     {
         preg_match('/(const)(\s+)(\w+)(\s*)=(.*)/', $this->getInstruction(), $matches);
-        eval($this->getInstruction() . ";");
-        if (in_array($matches[3], get_defined_constants(true)['user'])) {
-            return Some(new ConstantDefinedInstructionResult($matches[3]));
+
+        if (isset($matches[3]) && defined($matches[3])) {
+            return Failure(new \Error("Constant {$matches[3]} already defined"));
         }
-        return None();
+
+        eval($this->getInstruction() . ";");
+
+        if (isset($matches[3]) && defined($matches[3])) {
+            return Success(new ConstantDefinedInstructionResult($matches[3]));
+        }
+        return Failure(new \Error("Could not create constant"));
     }
 }

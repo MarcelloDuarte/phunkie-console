@@ -2,21 +2,26 @@
 
 namespace Md\PhunkieConsole\Instruction;
 
-use Md\Phunkie\Types\Option;
+use Md\Phunkie\Validation\Validation;
 use Md\PhunkieConsole\Result\ClassDefinedInstructionResult;
+use Md\PhunkieConsole\Result\NoResult;
 
 class ClassDefinitionInstruction extends BasicInstruction
 {
     /**
-     * @return Option<InstructionResult>
+     * @return Validation<Exception, InstructionResult>
      */
-    public function execute(): Option
+    public function execute(): Validation
     {
         preg_match('/(class)(\s+)(\w+)(.*)/', $this->getInstruction(), $matches);
-        eval($this->getInstruction());
-        if (class_exists($matches[3])) {
-            return Some(new ClassDefinedInstructionResult($matches[3]));
+        if (isset($matches[3]) && class_exists($matches[3])) {
+            return Failure(new \Error("Cannot declare class {$matches[3]}, because the name is already in use"));
         }
-        return None();
+
+        eval($this->getInstruction());
+
+        return class_exists($matches[3]) ?
+            Success(new ClassDefinedInstructionResult($matches[3])):
+            Success(new NoResult(""));
     }
 }
